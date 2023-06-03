@@ -18,8 +18,6 @@ const renderFeeds = (elements, error) => {
   return
 };
 
-
-
 export default (elements, initialState) => (path, value, prevValue) => {
   console.log(path, value);
   switch (path) {
