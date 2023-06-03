@@ -3,6 +3,30 @@ import render from './view.js';
 import 'bootstrap';
 import * as yup from 'yup';
 import onChange from 'on-change';
+import { init, t } from 'i18next';
+
+init({
+  lng: 'ru', 
+  debug: true,
+  resources: {
+    ru: {
+      translation: {
+        "invalidUrl": 'Ссылка должна быть валидным URL',
+        "existedUrl": 'RSS уже существует',
+        "responseSuccess": 'RSS успешно загружен',
+      }
+    }
+  }
+});
+
+yup.setLocale({
+  string: {
+    url: t('invalidUrl'),
+  },
+  mixed: {
+    notOneOf: t('existedUrl'),
+  },
+});
 
 const elements = {
   form: document.querySelector('form'),
@@ -27,10 +51,10 @@ elements.form.addEventListener('submit', (e) => {
   const data = new FormData(e.target);
   const url = data.get('url');
   const existingUrls = loadedFeeds();
-  const urlValidate = yup.string().url('Ссылка должна быть валидным URL').notOneOf(existingUrls, 'RSS уже существует');
+  const urlValidate = yup.string().url().notOneOf(existingUrls);
   urlValidate.validate(url).then((correctUrl) => {
     state.feeds.push({ feedUrl: correctUrl });
-    state.status = { validation: null, network: 'RSS успешно загружен' };
+    state.status = { validation: null, network: t('responseSuccess') };
   }).catch((error) => {
     state.status = { validation: error.message, network: null } ;
   });
