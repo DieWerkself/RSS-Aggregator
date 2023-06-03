@@ -1,1 +1,28 @@
 @import "~bootstrap/scss/bootstrap";
+
+form {
+  display: flex;
+  justify-content: center;
+}
+
+.form-body {
+  display: flex;
+  --bs-gutter-x: 1.5rem;
+  --bs-gutter-y: 0;
+}
+
+.form-floating {
+    position: relative;
+
+    label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      padding: 1rem 0.75rem;
+      pointer-events: none;
+      border: 1px solid transparent;
+      transform-origin: 0 0;
+      transition: opacity 0.2s ease-in-out,transform 0.2s ease-in-out;
+    }
+}
