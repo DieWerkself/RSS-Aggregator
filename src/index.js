@@ -67,7 +67,7 @@ const updateFeeds = () => {
           const updatedPosts = newPosts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
           state.posts.unshift(...updatedPosts);
         })
-        .catch((e) => console.log(e.message))
+        .catch((e) => console.log(e))
     );
     Promise.all(promisesPosts).finally(() => updateFeeds());
   }, 5000)
