@@ -64,18 +64,12 @@ const updateFeeds = () => {
         .then((response) => {
           const { posts } = parseRss(response.data.contents);
           const newPosts = _.differenceBy(posts, initialState.posts, 'url');
-          return newPosts;
+          const updatedPosts = newPosts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
+          state.posts.unshift(...updatedPosts);
         })
-        .catch(() => {})
+        .catch((e) => console.log(e.message))
     );
-    const promisePosts = Promise.all(promisesPosts);
-    promisePosts.then((data) => {
-      updateFeeds();
-      data.forEach((posts) => {
-        const updatedPosts = posts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
-        state.posts.unshift(...updatedPosts);
-      })
-    }).catch(() => {});
+    Promise.all(promisesPosts).finally(() => updateFeeds());
   }, 5000)
 };
 
