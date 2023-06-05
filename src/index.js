@@ -10,7 +10,7 @@ import _ from 'lodash';
 
 init({
   lng: 'ru', 
-  debug: true,
+  debug: false,
   resources: {
     ru: {
       translation: {
@@ -41,6 +41,8 @@ const elements = {
   feedback: document.querySelector('.feedback'),
   feeds: document.querySelector('.feeds'),
   posts: document.querySelector('.posts'),
+  modal: document.querySelector('.modal-content'),
+  button: document.querySelector('[aria-label="add"]'),
 };
 
 const initialState = {
@@ -50,36 +52,40 @@ const initialState = {
   },
   feeds: [],
   posts: [],
+  uiState: {
+    visited: new Set(),
+    process: false,
+  }
 };
 
 const updateFeeds = () => {
   setTimeout(() => {
-    initialState.feeds.forEach(({ url }) => {
-      axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+    const promisesPosts = initialState.feeds.map(({ url }) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
         .then((response) => {
           const { posts } = parseRss(response.data.contents);
-          const difference = _.differenceBy(posts, initialState.posts, 'url');
-          if (difference.length > 0) {
-            const updatedPosts = difference.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
-            state.posts.unshift(...updatedPosts);
-          }
-        }).catch((error) => {
-          console.log(error);
+          const newPosts = _.differenceBy(posts, initialState.posts, 'url');
+          return newPosts;
         })
-    });
-    updateFeeds();
+        .catch(() => {})
+    );
+    const promisePosts = Promise.all(promisesPosts);
+    promisePosts.then((data) => {
+      updateFeeds();
+      data.forEach((posts) => {
+        const updatedPosts = posts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
+        state.posts.unshift(...updatedPosts);
+      })
+    }).catch(() => {});
   }, 5000)
-  
 };
-  
 
-
-const state = onChange(initialState, render(elements, initialState));
+export const state = onChange(initialState, render(elements, initialState));
 
 const loadedFeeds = () => initialState.feeds.map((item) => item.url);
 
 elements.form.addEventListener('submit', (e) => {
   e.preventDefault();
+  state.uiState.process = true;
   const data = new FormData(e.target);
   const url = data.get('url');
   const existingUrls = loadedFeeds();
@@ -87,15 +93,13 @@ elements.form.addEventListener('submit', (e) => {
   urlValidate.validate(url)
     .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${validUrl}`))
     .then((response) => {
-      if (!response.data.status.content_type.includes('xml')) {
-        throw new Error(t('invalidRss'));
-      }
       const { feed, posts } = parseRss(response.data.contents);
       state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url: response.data.status.url });
       const postsWithId = posts.map((post) => ({ ...post, id: _.uniqueId('postId_')}));
       state.posts.unshift(...postsWithId);
       state.status = { error: null, successResponse: t('responseSuccess') };
-      updateFeeds();
+      state.uiState.process = false;
+      if (initialState.feeds.length === 1) updateFeeds();
     })
   .catch((error) => {
     state.status = { error: error.message, successResponse: null } ;

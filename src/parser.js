@@ -1,7 +1,11 @@
+import { t } from 'i18next';
+
 export default (rss) => {
   const parser = new DOMParser();
   const rssDom = parser.parseFromString(rss, "text/xml");
-  console.log(rssDom);
+  if (rssDom.querySelector('parsererror')) {
+    throw new Error(t('invalidRss'));
+  }
   const feedTitle = rssDom.querySelector('channel title').textContent;
   const feedDescription = rssDom.querySelector('channel description').textContent;
   const posts = [...rssDom.querySelectorAll('channel item')].map((post) => {

@@ -1,4 +1,12 @@
-import { init, t } from 'i18next';
+import { t } from 'i18next';
+import { state } from './index.js';
+
+const renderModal = (elements, title, description) => {
+  const modalTitle = elements.modal.querySelector('.modal-title');
+  const modalBody = elements.modal.querySelector('.modal-body');
+  modalTitle.textContent = title;
+  modalBody.textContent = description;
+};
 
 const renderStatus = (elements, status) => {
   if (!status.error && status.successResponse) {
@@ -58,7 +66,8 @@ const renderPosts = (elements, posts) => {
     const liPost= document.createElement('li');
     liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const linkPost = document.createElement('a');
-    linkPost.classList.add('link_post', 'fw-bold');
+    linkPost.classList.add('link_post');
+    linkPost.classList.add(state.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
     linkPost.setAttribute('data-id', post.id);
     linkPost.setAttribute('target', '_blank');
     linkPost.setAttribute('rel', 'noopener noreferrer');
@@ -72,25 +81,35 @@ const renderPosts = (elements, posts) => {
     buttonPost.type = 'button';
     buttonPost.textContent = t('showModal');
     liPost.append(linkPost, buttonPost);
+    liPost.addEventListener('click', (e) => {
+      state.uiState.visited.add(e.target.dataset.id);
+      if (e.target.type = 'button') {
+        renderModal(elements, post.title, post.description);
+      }
+      renderPosts(elements, posts);
+    })
     return liPost;
   });
   postsSection.append(postsTitle, ...postsArray);
   elements.posts.append(postsSection);
 };
 
-export default (elements, initialState) => (path, value, prevValue) => {
-  switch (path) {
-    case 'feeds':
-      renderFeeds(elements, value);
-      break
-    case 'posts':
-      renderPosts(elements, value);
-      break
-    case 'status':
-      renderStatus(elements, value, prevValue);
-      break;
-    default:
-      break;
-  }
+export default (elements) => (path, value, prevValue) => {
+    switch (path) {
+      case 'feeds':
+        renderFeeds(elements, value);
+        break
+      case 'posts':
+        renderPosts(elements, value);
+        break
+      case 'status':
+        renderStatus(elements, value, prevValue);
+        break;
+      case 'uiState.process':
+        elements.button.disabled = value;
+        break;
+      default:
+        break;
+    }
 };
 
