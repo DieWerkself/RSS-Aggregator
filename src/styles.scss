@@ -132,7 +132,7 @@ body {
   padding: 5px;
 }
 
-.link_post {
+a {
   &:hover {
     background: linear-gradient(to right, var(--secondary),var(--primary));
     -webkit-background-clip: text;

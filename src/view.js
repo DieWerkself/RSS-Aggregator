@@ -66,7 +66,6 @@ const renderPosts = (elements, postsList, initialState, i18) => {
     const liPost = document.createElement('li');
     liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const linkPost = document.createElement('a');
-    linkPost.classList.add('link_post');
     linkPost.classList.add(initialState.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
     linkPost.setAttribute('data-id', post.id);
     linkPost.setAttribute('target', '_blank');
