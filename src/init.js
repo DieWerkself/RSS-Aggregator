@@ -45,7 +45,7 @@ export const state = onChange(initialState, render(elements, initialState, i18))
 export default () => {
   const updateFeeds = () => {
     setTimeout(() => {
-      const promisesPosts = initialState.feeds.map(({ url }) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${url}`)
+      const promisesPosts = initialState.feeds.map(({ url }) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
         .then((response) => {
           const { posts } = parseRss(response.data.contents, i18);
           const newPosts = _.differenceBy(posts, initialState.posts, 'url');
@@ -65,7 +65,7 @@ export default () => {
     const existingUrls = loadedFeeds();
     const urlValidate = yup.string().url().notOneOf(existingUrls);
     urlValidate.validate(url)
-      .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${validUrl}`))
+      .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(validUrl)}`))
       .then((response) => {
         const { feed, posts } = parseRss(response.data.contents, i18);
         state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url });
