@@ -1,41 +1,40 @@
-import { t } from 'i18next';
-import { state } from './index.js';
-
-const renderModal = (elements, title, description) => {
-  const modalTitle = elements.modal.querySelector('.modal-title');
-  const modalBody = elements.modal.querySelector('.modal-body');
+const renderModal = (modal, title, description) => {
+  const modalTitle = modal.querySelector('.modal-title');
+  const modalBody = modal.querySelector('.modal-body');
   modalTitle.textContent = title;
   modalBody.textContent = description;
 };
 
 const renderStatus = (elements, status) => {
-  if (!status.error && status.successResponse) {
-    elements.feedback.classList.remove('text-danger');
-    elements.feedback.classList.add('text-success');
-    elements.input.classList.remove('is-invalid');
-    elements.feedback.textContent = status.successResponse;
-    elements.form.reset();
-    elements.input.focus();
+  const { feedback, input, form } = elements;
+  if (!status.error && status.network) {
+    feedback.classList.remove('text-danger');
+    feedback.classList.add('text-success');
+    input.classList.remove('is-invalid');
+    feedback.textContent = status.network;
+    form.reset();
+    input.focus();
   }
-  if (status.error && !status.successResponse) {
-    elements.feedback.classList.remove('text-success');
-    elements.feedback.classList.add('text-danger');
-    elements.input.classList.add('is-invalid');
-    elements.feedback.textContent = status.error;
+  if (status.error && !status.network) {
+    feedback.classList.remove('text-success');
+    feedback.classList.add('text-danger');
+    input.classList.add('is-invalid');
+    feedback.textContent = status.error;
   }
 };
 
-const renderFeeds = (elements, feeds) => {
-  elements.feeds.innerHTML = '';
+const renderFeeds = (elements, feedsList, i18) => {
+  const { feeds } = elements;
+  feeds.innerHTML = '';
   const feedsSection = document.createElement('div');
   feedsSection.classList.add('feeds_card');
   const feedsTitle = document.createElement('div');
   const h2Title = document.createElement('h2');
-  h2Title.textContent = t('feeds');
+  h2Title.textContent = i18.t('feeds');
   feedsTitle.append(h2Title);
   const ulFeeds = document.createElement('ul');
   ulFeeds.classList.add('list-group', 'border-0', 'rounded-0');
-  const feedsArray = [...feeds].map((feed) => {
+  const feedsArray = [...feedsList].map((feed) => {
     const liFeed = document.createElement('li');
     liFeed.classList.add('list-group-item', 'border-0', 'border-end-0');
     const titleFeed = document.createElement('h3');
@@ -49,25 +48,26 @@ const renderFeeds = (elements, feeds) => {
     return liFeed;
   });
   feedsSection.append(feedsTitle, ...feedsArray);
-  elements.feeds.append(feedsSection);
+  feeds.append(feedsSection);
 };
 
-const renderPosts = (elements, posts) => {
-  elements.posts.innerHTML = '';
+const renderPosts = (elements, postsList, initialState, i18) => {
+  const { posts, modal } = elements;
+  posts.innerHTML = '';
   const postsSection = document.createElement('div');
   postsSection.classList.add('feeds_card');
   const postsTitle = document.createElement('div');
   const postsH2Title = document.createElement('h2');
-  postsH2Title.textContent = t('posts');
+  postsH2Title.textContent = i18.t('posts');
   postsTitle.append(postsH2Title);
   const ulPosts = document.createElement('ul');
   ulPosts.classList.add('list-group', 'border-0', 'rounded-0');
-  const postsArray = [...posts].map((post) => {
-    const liPost= document.createElement('li');
+  const postsArray = [...postsList].map((post) => {
+    const liPost = document.createElement('li');
     liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const linkPost = document.createElement('a');
     linkPost.classList.add('link_post');
-    linkPost.classList.add(state.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
+    linkPost.classList.add(initialState.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
     linkPost.setAttribute('data-id', post.id);
     linkPost.setAttribute('target', '_blank');
     linkPost.setAttribute('rel', 'noopener noreferrer');
@@ -79,37 +79,37 @@ const renderPosts = (elements, posts) => {
     buttonPost.setAttribute('data-bs-toggle', 'modal');
     buttonPost.setAttribute('data-bs-target', '#modal');
     buttonPost.type = 'button';
-    buttonPost.textContent = t('showModal');
+    buttonPost.textContent = i18.t('showModal');
     liPost.append(linkPost, buttonPost);
     liPost.addEventListener('click', (e) => {
-      state.uiState.visited.add(e.target.dataset.id);
-      if (e.target.type = 'button') {
-        renderModal(elements, post.title, post.description);
+      initialState.uiState.visited.add(e.target.dataset.id);
+      if (e.target.type === 'button') {
+        renderModal(modal, post.title, post.description);
       }
-      renderPosts(elements, posts);
-    })
+      renderPosts(elements, postsList, initialState, i18);
+    });
     return liPost;
   });
   postsSection.append(postsTitle, ...postsArray);
-  elements.posts.append(postsSection);
+  posts.append(postsSection);
 };
 
-export default (elements) => (path, value, prevValue) => {
-    switch (path) {
-      case 'feeds':
-        renderFeeds(elements, value);
-        break
-      case 'posts':
-        renderPosts(elements, value);
-        break
-      case 'status':
-        renderStatus(elements, value, prevValue);
-        break;
-      case 'uiState.process':
-        elements.button.disabled = value;
-        break;
-      default:
-        break;
-    }
+export default (elements, initialState, i18) => (path, value, prevValue) => {
+  const { button } = elements;
+  switch (path) {
+    case 'feeds':
+      renderFeeds(elements, value, i18);
+      break;
+    case 'posts':
+      renderPosts(elements, value, initialState, i18);
+      break;
+    case 'status':
+      renderStatus(elements, value, prevValue);
+      break;
+    case 'uiState.isProcess':
+      button.disabled = value;
+      break;
+    default:
+      break;
+  }
 };
-

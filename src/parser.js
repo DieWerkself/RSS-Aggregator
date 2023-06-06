@@ -1,10 +1,8 @@
-import { t } from 'i18next';
-
-export default (rss) => {
+export default (rss, i18) => {
   const parser = new DOMParser();
-  const rssDom = parser.parseFromString(rss, "text/xml");
+  const rssDom = parser.parseFromString(rss, 'text/xml');
   if (rssDom.querySelector('parsererror')) {
-    throw new Error(t('invalidRss'));
+    throw new Error(i18.t('invalidRss'));
   }
   const feedTitle = rssDom.querySelector('channel title').textContent;
   const feedDescription = rssDom.querySelector('channel description').textContent;
@@ -12,8 +10,8 @@ export default (rss) => {
     const postTitle = post.querySelector('title').textContent;
     const postDescription = post.querySelector('description').textContent;
     const postLink = post.querySelector('link').textContent;
-    return { title: postTitle, description: postDescription, url: postLink }
-  })
-  const feed = { title: feedTitle, description: feedDescription }
+    return { title: postTitle, description: postDescription, url: postLink };
+  });
+  const feed = { title: feedTitle, description: feedDescription };
   return { feed, posts };
 };

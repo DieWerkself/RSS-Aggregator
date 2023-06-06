@@ -43,6 +43,9 @@ body {
     background-color: var(--primary);
     color: #fff;
   }
+  &:disabled {
+    background-color: transparent;
+  }
 }
 
 .form__group {
