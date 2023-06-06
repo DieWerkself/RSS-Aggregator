@@ -52,7 +52,7 @@ export default () => {
           const updatedPosts = newPosts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
           state.posts.unshift(...updatedPosts);
         })
-        .catch(() => console.log(i18.t('networkError'))));
+        .catch(() => {}));
       Promise.all(promisesPosts).finally(() => updateFeeds());
     }, 5000);
   };
@@ -75,7 +75,8 @@ export default () => {
         if (initialState.feeds.length === 1) updateFeeds();
       })
       .catch((error) => {
-        state.status = { error: error.message, network: null };
+        const errorMessage = error.message === 'Network Error' ? i18.t('networkError') : error.message;
+        state.status = { error: errorMessage, network: null };
       })
       .then(() => { state.uiState.isProcess = false; });
   });
