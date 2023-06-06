@@ -52,7 +52,7 @@ export default () => {
           const updatedPosts = newPosts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
           state.posts.unshift(...updatedPosts);
         })
-        .catch((e) => console.log(e)));
+        .catch(() => console.log(i18.t('networkError'))));
       Promise.all(promisesPosts).finally(() => updateFeeds());
     }, 5000);
   };
@@ -60,8 +60,7 @@ export default () => {
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     state.uiState.isProcess = true;
-    const data = new FormData(e.target);
-    const url = data.get('url');
+    const url = elements.input.value;
     const loadedFeeds = () => initialState.feeds.map((item) => item.url);
     const existingUrls = loadedFeeds();
     const urlValidate = yup.string().url().notOneOf(existingUrls);
