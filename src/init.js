@@ -61,14 +61,14 @@ export default () => {
     e.preventDefault();
     state.uiState.isProcess = true;
     const url = elements.input.value;
-    const loadedFeeds = () => initialState.feeds.map((item) => item.id);
+    const loadedFeeds = () => initialState.feeds.map((item) => item.url);
     const existingUrls = loadedFeeds();
     const urlValidate = yup.string().url().notOneOf(existingUrls);
     urlValidate.validate(url)
       .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${validUrl}`))
       .then((response) => {
         const { feed, posts } = parseRss(response.data.contents, i18);
-        state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), id: url });
+        state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url });
         const postsWithId = posts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
         state.posts.unshift(...postsWithId);
         state.status = { error: null, network: i18.t('responseSuccess') };

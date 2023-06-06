@@ -132,15 +132,19 @@ body {
   padding: 5px;
 }
 
-a {
-  &:hover {
-    background: linear-gradient(to right, var(--secondary),var(--primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+.list-group-item {
+  & a {
+    &:hover {
+      background: linear-gradient(to right, var(--secondary),var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    text-decoration: none;
+    color: var(--white);
   }
-  text-decoration: none;
-  color: var(--white);
 }
+
+
 
 .is-invalid {
   ~ .form__label {
