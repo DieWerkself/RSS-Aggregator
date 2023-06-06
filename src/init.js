@@ -64,6 +64,7 @@ export default () => {
     const loadedFeeds = () => initialState.feeds.map((item) => item.url);
     const existingUrls = loadedFeeds();
     const urlValidate = yup.string().url().notOneOf(existingUrls);
+    console.log(url);
     urlValidate.validate(url)
       .then((validUrl) => axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${validUrl}`))
       .then((response) => {
