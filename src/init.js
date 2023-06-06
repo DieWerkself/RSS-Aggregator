@@ -40,7 +40,7 @@ yup.setLocale({
   },
 });
 
-export const state = onChange(initialState, render(elements, initialState, i18));
+const state = onChange(initialState, render(elements, initialState, i18));
 
 export default () => {
   const updateFeeds = () => {
