@@ -70,7 +70,7 @@ export default () => {
       .then((response) => {
         console.log('After response', url);
         const { feed, posts } = parseRss(response.data.contents, i18);
-        state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url: response.data.status.url });
+        state.feeds.unshift({ ...feed, id: _.uniqueId('feedId_') });
         const postsWithId = posts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
         state.posts.unshift(...postsWithId);
         console.log('Before change status', url);
