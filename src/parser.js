@@ -1,8 +1,11 @@
-export default (rss, i18) => {
+export default (rss) => {
   const parser = new DOMParser();
-  const rssDom = parser.parseFromString(rss, 'text/xml');
-  if (rssDom.querySelector('parsererror')) {
-    throw new Error(i18.t('invalidRss'));
+  const rssDom = parser.parseFromString(rss, 'application/xml');
+  const errorNode = rssDom.querySelector('parsererror');
+  if (errorNode) {
+    const error = new Error(errorNode.textContent);
+    error.isParsingError = true;
+    throw error;
   }
   const feedTitle = rssDom.querySelector('channel title').textContent;
   const feedDescription = rssDom.querySelector('channel description').textContent;

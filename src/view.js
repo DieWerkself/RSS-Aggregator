@@ -7,20 +7,23 @@ const renderModal = (modal, title, description) => {
 
 const renderStatus = (elements, status) => {
   const { feedback, input, form } = elements;
-  if (!status.error && status.network) {
-    feedback.classList.remove('text-danger');
-    feedback.classList.add('text-success');
-    input.classList.remove('is-invalid');
-    feedback.textContent = status.network;
-    form.reset();
-    input.focus();
-  }
-  if (status.error && !status.network) {
+  if (status.validationState === 'invalid') {
     feedback.classList.remove('text-success');
     feedback.classList.add('text-danger');
     input.classList.add('is-invalid');
-    feedback.textContent = status.error;
   }
+  if (status.state === 'failed') {
+    feedback.classList.remove('text-success');
+    feedback.classList.add('text-danger');
+  }
+  if (status.state === 'success') {
+    feedback.classList.remove('text-danger');
+    feedback.classList.add('text-success');
+    input.classList.remove('is-invalid');
+    form.reset();
+    input.focus();
+  }
+  feedback.textContent = status.message;
 };
 
 const renderFeeds = (elements, feedsList, i18) => {
@@ -93,7 +96,7 @@ const renderPosts = (elements, postsList, initialState, i18) => {
   posts.append(postsSection);
 };
 
-export default (elements, initialState, i18) => (path, value, prevValue) => {
+export default (elements, initialState, i18) => (path, value) => {
   const { button } = elements;
   switch (path) {
     case 'feeds':
@@ -102,8 +105,8 @@ export default (elements, initialState, i18) => (path, value, prevValue) => {
     case 'posts':
       renderPosts(elements, value, initialState, i18);
       break;
-    case 'status':
-      renderStatus(elements, value, prevValue);
+    case 'loadingFeed':
+      renderStatus(elements, value);
       break;
     case 'uiState.isProcess':
       button.disabled = value;
