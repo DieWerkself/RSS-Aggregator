@@ -5,25 +5,37 @@ const renderModal = (modal, title, description) => {
   modalBody.textContent = description;
 };
 
-const renderStatus = (elements, status) => {
-  const { feedback, input, form } = elements;
-  if (status.validationState === 'invalid') {
+const renderValidationStatus = (elements, status, state, i18) => {
+  const { feedback, input } = elements;
+  if (status === 'failed') {
     feedback.classList.remove('text-success');
     feedback.classList.add('text-danger');
     input.classList.add('is-invalid');
+    feedback.textContent = i18.t(state.form.error);
   }
-  if (status.state === 'failed') {
+};
+
+const renderProcessStatus = (elements, status, state, i18) => {
+  const {
+    feedback, input, form, button,
+  } = elements;
+
+  button.disabled = status === 'loading';
+  if (status === 'failed') {
     feedback.classList.remove('text-success');
     feedback.classList.add('text-danger');
+    input.classList.remove('is-invalid');
+    feedback.textContent = i18.t(state.loadingProcess.error);
+    return;
   }
-  if (status.state === 'success') {
+  if (status === 'responseSuccess') {
     feedback.classList.remove('text-danger');
     feedback.classList.add('text-success');
     input.classList.remove('is-invalid');
+    feedback.textContent = i18.t(state.loadingProcess.status);
     form.reset();
     input.focus();
   }
-  feedback.textContent = status.message;
 };
 
 const renderFeeds = (elements, feedsList, i18) => {
@@ -54,7 +66,7 @@ const renderFeeds = (elements, feedsList, i18) => {
   feeds.append(feedsSection);
 };
 
-const renderPosts = (elements, postsList, initialState, i18) => {
+const renderPosts = (elements, postsList, state, i18) => {
   const { posts, modal } = elements;
   posts.innerHTML = '';
   const postsSection = document.createElement('div');
@@ -69,7 +81,7 @@ const renderPosts = (elements, postsList, initialState, i18) => {
     const liPost = document.createElement('li');
     liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const linkPost = document.createElement('a');
-    linkPost.classList.add(initialState.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
+    linkPost.classList.add(state.uiState.visited.has(post.id) ? 'fw-normal' : 'fw-bold');
     linkPost.setAttribute('data-id', post.id);
     linkPost.setAttribute('target', '_blank');
     linkPost.setAttribute('rel', 'noopener noreferrer');
@@ -84,11 +96,11 @@ const renderPosts = (elements, postsList, initialState, i18) => {
     buttonPost.textContent = i18.t('showModal');
     liPost.append(linkPost, buttonPost);
     liPost.addEventListener('click', (e) => {
-      initialState.uiState.visited.add(e.target.dataset.id);
+      state.uiState.visited.add(e.target.dataset.id);
       if (e.target.type === 'button') {
         renderModal(modal, post.title, post.description);
       }
-      renderPosts(elements, postsList, initialState, i18);
+      renderPosts(elements, postsList, state, i18);
     });
     return liPost;
   });
@@ -96,20 +108,19 @@ const renderPosts = (elements, postsList, initialState, i18) => {
   posts.append(postsSection);
 };
 
-export default (elements, initialState, i18) => (path, value) => {
-  const { button } = elements;
+export default (elements, state, i18) => (path, value) => {
   switch (path) {
     case 'feeds':
       renderFeeds(elements, value, i18);
       break;
     case 'posts':
-      renderPosts(elements, value, initialState, i18);
+      renderPosts(elements, value, state, i18);
       break;
-    case 'loadingFeed':
-      renderStatus(elements, value);
+    case 'form.status':
+      renderValidationStatus(elements, value, state, i18);
       break;
-    case 'uiState.isProcess':
-      button.disabled = value;
+    case 'loadingProcess.status':
+      renderProcessStatus(elements, value, state, i18);
       break;
     default:
       break;
