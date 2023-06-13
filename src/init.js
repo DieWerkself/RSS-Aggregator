@@ -2,12 +2,9 @@ import 'bootstrap';
 import './styles.scss';
 import _ from 'lodash';
 import axios from 'axios';
-import i18next from 'i18next';
-import onChange from 'on-change';
 import * as yup from 'yup';
 import render from './view.js';
 import parseRss from './parser';
-import resources from './localization/lang.js';
 
 const createUrl = (link) => {
   const url = new URL('https://allorigins.hexlet.app/get');
@@ -23,7 +20,6 @@ const updateFeeds = (state) => {
         const { posts } = parseRss(response.data.contents);
         const newPosts = _.differenceBy(posts, state.posts, 'url');
         const updatedPosts = newPosts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
-        console.log('Test');
         state.posts.unshift(...updatedPosts);
       })
       .catch(() => { }));
@@ -31,14 +27,7 @@ const updateFeeds = (state) => {
   }, 5000);
 };
 
-export default async () => {
-  const i18inst = i18next.createInstance();
-  await i18inst.init({
-    lng: 'ru',
-    debug: false,
-    resources,
-  });
-
+export default (i18inst) => {
   const elements = {
     form: document.querySelector('form'),
     input: document.querySelector('#url-input'),
@@ -58,15 +47,11 @@ export default async () => {
       error: null,
       status: 'filling',
     },
-    status: {
-      validation: null,
-      network: null,
-    },
     feeds: [],
     posts: [],
     uiState: {
       visited: new Set(),
-      isProcess: false,
+      modal: {},
     },
   };
 
@@ -79,7 +64,7 @@ export default async () => {
     },
   });
 
-  const state = onChange(initialState, render(elements, initialState, i18inst));
+  const state = render(elements, initialState, i18inst);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();

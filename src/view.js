@@ -1,8 +1,13 @@
-const renderModal = (modal, title, description) => {
+import onChange from 'on-change';
+
+const renderModal = (elements, { title, description, link }) => {
+  const { modal } = elements;
   const modalTitle = modal.querySelector('.modal-title');
   const modalBody = modal.querySelector('.modal-body');
+  const modalButton = modal.querySelector('.full-article');
   modalTitle.textContent = title;
   modalBody.textContent = description;
+  modalButton.href = link;
 };
 
 const renderValidationStatus = (elements, status, state, i18) => {
@@ -66,8 +71,9 @@ const renderFeeds = (elements, feedsList, i18) => {
   feeds.append(feedsSection);
 };
 
-const renderPosts = (elements, postsList, state, i18) => {
-  const { posts, modal } = elements;
+const renderPosts = (elements, watchedState, i18) => {
+  const state = watchedState;
+  const { posts } = elements;
   posts.innerHTML = '';
   const postsSection = document.createElement('div');
   postsSection.classList.add('feeds_card');
@@ -77,7 +83,7 @@ const renderPosts = (elements, postsList, state, i18) => {
   postsTitle.append(postsH2Title);
   const ulPosts = document.createElement('ul');
   ulPosts.classList.add('list-group', 'border-0', 'rounded-0');
-  const postsArray = [...postsList].map((post) => {
+  const postsArray = [...state.posts].map((post) => {
     const liPost = document.createElement('li');
     liPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     const linkPost = document.createElement('a');
@@ -98,9 +104,10 @@ const renderPosts = (elements, postsList, state, i18) => {
     liPost.addEventListener('click', (e) => {
       state.uiState.visited.add(e.target.dataset.id);
       if (e.target.type === 'button') {
-        renderModal(modal, post.title, post.description);
+        state.uiState.modal = {
+          title: post.title, description: post.description, link: post.url,
+        };
       }
-      renderPosts(elements, postsList, state, i18);
     });
     return liPost;
   });
@@ -108,21 +115,28 @@ const renderPosts = (elements, postsList, state, i18) => {
   posts.append(postsSection);
 };
 
-export default (elements, state, i18) => (path, value) => {
-  switch (path) {
-    case 'feeds':
-      renderFeeds(elements, value, i18);
-      break;
-    case 'posts':
-      renderPosts(elements, value, state, i18);
-      break;
-    case 'form.status':
-      renderValidationStatus(elements, value, state, i18);
-      break;
-    case 'loadingProcess.status':
-      renderProcessStatus(elements, value, state, i18);
-      break;
-    default:
-      break;
-  }
+export default (elements, initialState, i18init) => {
+  const watchedState = onChange(initialState, (path, value) => {
+    switch (path) {
+      case 'feeds':
+        renderFeeds(elements, value, i18init);
+        break;
+      case 'posts':
+      case 'uiState.visited':
+        renderPosts(elements, watchedState, i18init);
+        break;
+      case 'form.status':
+        renderValidationStatus(elements, value, watchedState, i18init);
+        break;
+      case 'loadingProcess.status':
+        renderProcessStatus(elements, value, watchedState, i18init);
+        break;
+      case 'uiState.modal':
+        renderModal(elements, value);
+        break;
+      default:
+        break;
+    }
+  });
+  return watchedState;
 };
