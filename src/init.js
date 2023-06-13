@@ -64,39 +64,39 @@ export default (i18inst) => {
     },
   });
 
-  const watchedState = render(elements, initialState, i18inst);
+  const view = render(elements, initialState, i18inst);
 
   elements.form.addEventListener('submit', (e) => {
     e.preventDefault();
     const url = elements.input.value;
-    watchedState.form.status = 'processing';
+    view.form.status = 'processing';
     const loadedFeeds = () => initialState.feeds.map((item) => item.url);
     const existingUrls = loadedFeeds();
     const urlValidate = yup.string().url().notOneOf(existingUrls);
     urlValidate.validate(url)
       .then((validUrl) => {
-        watchedState.form.status = 'success';
-        watchedState.loadingProcess.status = 'loading';
+        view.form.status = 'success';
+        view.loadingProcess.status = 'loading';
         return axios.get(createUrl(validUrl));
       })
       .then((response) => {
-        watchedState.loadingProcess.status = 'loaded';
+        view.loadingProcess.status = 'loaded';
         const { feed, posts } = parseRss(response.data.contents);
-        watchedState.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url });
+        view.feeds.unshift({ ...feed, id: _.uniqueId('feedId_'), url });
         const postsWithId = posts.map((post) => ({ ...post, id: _.uniqueId('postId_') }));
-        watchedState.posts.unshift(...postsWithId);
-        watchedState.loadingProcess.error = null;
-        watchedState.loadingProcess.status = 'responseSuccess';
-        if (initialState.feeds.length === 1) updateFeeds(watchedState);
+        view.posts.unshift(...postsWithId);
+        view.loadingProcess.error = null;
+        view.loadingProcess.status = 'responseSuccess';
+        if (initialState.feeds.length === 1) updateFeeds(view);
       })
       .catch((error) => {
         if (error.isAxiosError) {
-          watchedState.loadingProcess.error = 'networkError';
-          watchedState.loadingProcess.status = 'failed';
+          view.loadingProcess.error = 'networkError';
+          view.loadingProcess.status = 'failed';
           return;
         }
-        watchedState.form.error = error.isParsingError ? 'invalidRss' : error.message;
-        watchedState.form.status = 'failed';
+        view.form.error = error.isParsingError ? 'invalidRss' : error.message;
+        view.form.status = 'failed';
       });
   });
 };
